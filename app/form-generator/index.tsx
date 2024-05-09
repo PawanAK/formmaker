@@ -34,7 +34,7 @@ const FormGenerator = (props: Props) => {
               id="description"
               name="description"
               required
-              placeholder="enter what your form is about and what info u want to collect  and AI will do the magic"
+              placeholder="Enter what your form is about and what info u want to collect  and AI will do the magic"
             />
           </div>
         </form>
