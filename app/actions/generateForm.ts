@@ -1,8 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { json } from "stream/consumers";
-
 import { z } from "zod";
 
 export async function generateForm(
@@ -19,21 +17,21 @@ export async function generateForm(
   });
 
   if (!parse.success) {
-    console.log(parse.success);
+    console.log(parse.error);
     return {
-      message: "Invalid form data",
+      message: "Failed to parse data",
     };
   }
 
   if (!process.env.OPENAI_API_KEY) {
     return {
-      message: "API key not found",
+      message: "No OpenAI API key found",
     };
   }
 
   const data = parse.data;
   const promptExplanation =
-    "Given the description, your task is to generate a survey object. This object should consist of three main fields: 'name' (string) for the form title, 'description' (string) for describing the form, and 'questions' (array) containing individual questions. Each question should have two properties: 'text' (string) representing the question itself, and 'fieldType' specifying the type of input field. The 'fieldType' can be one of the following options: 'RadioGroup', 'Select', 'Input', 'Textarea', or 'Switch'. For 'RadioGroup' and 'Select' types, additionally provide a 'fieldOptions' array containing objects with 'text' and 'value' properties. For example, for 'RadioGroup' and 'Select' types, the 'fieldOptions' array could be [{text: 'Yes', value: 'yes'}, {text: 'No', value: 'no'}]. For 'Input', 'Textarea', and 'Switch' types, the 'fieldOptions' array should be empty. Return the survey object in JSON format.";
+    "Based on the description, generate a survey object with 3 fields: name(string) for the form, description(string) of the form and a questions array where every element has 2 fields: text and the fieldType and fieldType can be of these options RadioGroup, Select, Input, Textarea, Switch; and return it in json format. For RadioGroup, and Select types also return fieldOptions array with text and value fields. For example, for RadioGroup, and Select types, the field options array can be [{text: 'Yes', value: 'yes'}, {text: 'No', value: 'no'}] and for Input, Textarea, and Switch types, the field options array can be empty. For example, for Input, Textarea, and Switch types, the field options array can be []";
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -52,6 +50,7 @@ export async function generateForm(
         ],
       }),
     });
+    const json = await response.json();
 
     revalidatePath("/");
     return {
