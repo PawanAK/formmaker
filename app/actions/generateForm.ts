@@ -17,13 +17,14 @@ export async function generateForm(
   });
 
   if (!parse.success) {
-    console.log(parse.error);
+    console.log("Parsing Error:", parse.error);
     return {
       message: "Failed to parse data",
     };
   }
 
   if (!process.env.OPENAI_API_KEY) {
+    console.log("Error: No OpenAI API key found");
     return {
       message: "No OpenAI API key found",
     };
@@ -41,7 +42,7 @@ export async function generateForm(
       },
       method: "POST",
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4-turbo",
         messages: [
           {
             role: "system",
@@ -52,15 +53,15 @@ export async function generateForm(
     });
     const json = await response.json();
 
-    const responseObj = JSON.parse(json.choices[0].message.content);
-    console.log(responseObj);
+    console.log("API Response:", json);
+
     revalidatePath("/");
     return {
-      message: " successfully",
+      message: "Request processed successfully",
       data: json,
     };
   } catch (e) {
-    console.log(e);
+    console.log("API Call Error:", e);
     return {
       message: "Error in API call",
     };
